@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 
 # Carrega as variáveis de ambiente (GOOGLE_API_KEY)
@@ -25,7 +25,7 @@ def processar_interacao_empatica(comentario_usuario):
     llm = ChatGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0.7,
-        max_output_tokens=500
+       google_api_key=os.getenv("GOOGLE_API_KEY")
     )
 
     try:
