@@ -9,7 +9,7 @@ load_dotenv()
 def carregar_prompt():
     """Carrega as instruções de personalidade do arquivo de texto."""
     # Garante que o caminho funcione independente de onde o script é chamado
-    caminho_base = os.path.dirname(os.path.dirname(__file__))
+    caminho_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     caminho_prompt = os.path.join(caminho_base, "prompts", "empathy_prompt.txt")
     
     with open(caminho_prompt, "r", encoding="utf-8") as f:
@@ -21,11 +21,11 @@ def processar_interacao_empatica(comentario_usuario):
     baseada na estratégia de empatia usando o Gemini.
     """
     # 1. Configura o modelo Gemini 1.5 Flash
-    # A chave será buscada automaticamente no seu .env como GOOGLE_API_KEY
-    llm = ChatGenerativeAI(
+    # Ajustado para ChatGoogleGenerativeAI para alinhar com o import
+    llm = ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0.7,
-       google_api_key=os.getenv("GOOGLE_API_KEY")
+        google_api_key=os.getenv("GOOGLE_API_KEY")
     )
 
     try:
