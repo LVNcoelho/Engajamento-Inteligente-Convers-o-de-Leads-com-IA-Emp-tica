@@ -23,7 +23,7 @@ def processar_interacao_empatica(comentario_usuario):
     # 1. Configura o modelo Gemini 1.5 Flash
     # Ajustado para ChatGoogleGenerativeAI para alinhar com o import
     llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash",
+       model="models/gemini-1.5-flash",
         temperature=0.7,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
