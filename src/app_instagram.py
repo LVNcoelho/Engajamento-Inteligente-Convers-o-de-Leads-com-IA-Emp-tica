@@ -3,21 +3,20 @@ import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
+from database import criar_tabela, salvar_lead, buscar_leads
 
-# Configurações de página para o visual do portfólio
-st.set_page_config(page_title="Conecta Ti - IA Empática", page_icon="📸")
-
+# Configurações da Conecta Ti
+st.set_page_config(page_title="Conecta Ti - Diagnóstico IA", page_icon="🚀")
 load_dotenv()
+criar_tabela()
 
 def processar_ia(comentario_contextualizado):
-    """Conecta com o Gemini 3 Flash para gerar a resposta."""
     llm = ChatGoogleGenerativeAI(
         model="gemini-3-flash-preview", 
         temperature=1.0,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
     
-    # Busca o seu prompt de empatia que já está validado
     caminho_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     caminho_prompt = os.path.join(caminho_base, "prompts", "empathy_prompt.txt")
     
@@ -30,39 +29,57 @@ def processar_ia(comentario_contextualizado):
     ])
     
     chain = prompt_template | llm
-    return chain.invoke({"entrada": comentario_contextualizado}).content
+    resultado = chain.invoke({"entrada": comentario_contextualizado})
+    
+    # --- NOVA LÓGICA DE LIMPEZA À PROVA DE ERROS ---
+    # 1. Se for o objeto de mensagem do LangChain
+    if hasattr(resultado, 'content'):
+        return resultado.content
+    
+    # 2. Se for uma lista (o que causou o erro no print)
+    if isinstance(resultado, list):
+        if len(resultado) > 0 and isinstance(resultado[0], dict):
+            return resultado[0].get('text', str(resultado))
+        return str(resultado[0])
+    
+    # 3. Fallback para qualquer outro caso
+    return str(resultado)
 
-# --- INTERFACE STREAMLIT ---
-st.title("📸 Simulador de Engajamento IA")
-st.markdown("### Transformando leads frios em conexões reais")
+# --- INTERFACE ---
+st.title("🚀 Conecta Ti - Diagnóstico")
+st.markdown("### Transformando seu Instagram com IA")
 
 with st.sidebar:
-    st.header("Configurações do Lead")
-    nicho = st.selectbox("Nicho do Cliente:", ["Varejo", "Distribuidora", "Roupas e Acessórios", "Outros"])
-    dor = st.radio("Principal Dor:", ["Falta de Engajamento", "Demora no Atendimento"])
+    st.header("Filtros do Lead")
+    nicho = st.selectbox("Nicho:", ["Varejo", "Distribuidora", "Roupas e Acessórios", "Outros"])
+    dor = st.radio("Objetivo:", ["Mais Engajamento", "Atendimento Rápido"])
 
-st.info(f"Configuração atual: **{nicho}** focado em **{dor}**")
+# Pergunta personalizada
+dificuldade = st.text_area("Qual a sua maior dificuldade?", placeholder="Ex: Sinto que falo sozinha nos meus posts...")
 
-comentario_teste = st.text_area("Cole aqui o comentário do Instagram:", placeholder="Ex: Estou quase desistindo, ninguém comenta minhas fotos...")
-
-if st.button("Gerar Resposta Empática ✨"):
-    if comentario_teste:
-        with st.spinner('A IA da Conecta Ti está analisando o sentimento...'):
-            # Criamos o contexto que você planejou para o seu canal
-            contexto_full = f"O cliente é do nicho {nicho} e a dor principal é {dor}. Comentário do post: {comentario_teste}"
-            
-            resposta = processar_ia(contexto_full)
-            
-            st.chat_message("assistant").write(resposta)
-            st.balloons()
+if st.button("Gerar Insight ✨"):
+    if dificuldade:
+        with st.spinner('A IA da Conecta Ti está gerando seu diagnóstico...'):
+            contexto = f"Nicho: {nicho}, Dor: {dor}. Dificuldade: {dificuldade}"
+            try:
+                resposta_final = processar_ia(contexto)
+                
+                # Exibe a mensagem limpinha
+                st.chat_message("assistant").write(resposta_final)
+                
+                # OS BALÕES! 🎈🎈🎈
+                st.balloons()
+                
+                # Salva no seu CRM
+                salvar_lead(nicho, dor, dificuldade, resposta_final)
+            except Exception as e:
+                st.error(f"Erro ao processar: {e}")
     else:
-        st.warning("Por favor, insira um comentário para simular o atendimento.")
-```python
+        st.warning("Me conta sua dificuldade para eu poder te ajudar!")
+
+# Histórico
 st.markdown("---")
-st.subheader("📊 Painel de Leads (Seu CRM)")
-if st.checkbox("Mostrar Histórico de Atendimentos"):
-    leads = buscar_leads()
-    for l in leads:
-        with st.expander(f"Lead #{l[0]} - {l[1]}"):
-            st.write(f"**Nicho:** {l[2]} | **Dor:** {l[3]}")
-            st.write(f"**Insight:** {l[5]}")
+if st.checkbox("Ver Leads Salvos"):
+    for l in buscar_leads()[:3]:
+        with st.expander(f"Lead de {l[2]} - {l[1]}"):
+            st.write(l[5])
