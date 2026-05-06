@@ -49,7 +49,7 @@ def processar_interacao_empatica(comentario_usuario):
 
 if __name__ == "__main__":
     # Simulação de um cliente desanimado no Instagram
-    entrada_teste = "Estou quase desistindo. Posto coisas lindas, mas parece que ninguém liga, nem um comentário sequer..."
+    entrada_teste = "Apesar de produtos excelentes,tenho pouco engajamento, o que vc sugere?..."
     
     print("\n--- 🤖 INICIANDO ATENDIMENTO IA (GEMINI) ---")
     resultado = processar_interacao_empatica(entrada_teste)
