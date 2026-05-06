@@ -21,13 +21,12 @@ def processar_interacao_empatica(comentario_usuario):
     baseada na estratégia de empatia usando o Gemini.
     """
     # 1. Configura o modelo Gemini 1.5 Flash
-    # Ajustado para ChatGoogleGenerativeAI para alinhar com o import
+        #  Configura o modelo Gemini 3 Flash Preview
     llm = ChatGoogleGenerativeAI(
-      "gemini-3-flash-preview",
+        model="gemini-3-flash-preview",  # Certifique-se de que tem o 'model=' antes
         temperature=1.0,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
-
     try:
         system_instruction = carregar_prompt()
 
